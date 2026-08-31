@@ -90,6 +90,22 @@ target_end = st.sidebar.date_input("觀測結束日", default_end)
 warmup_days = st.sidebar.slider("指標預熱天數 (用於 EMA/RSI 準確度)", 30, 100, 60)
 
 # ==========================================
+# 1-1. Logout（登出系統）
+# ==========================================
+st.sidebar.divider()
+
+if st.sidebar.button(
+    "🔒 登出系統",
+    use_container_width=True
+):
+    # 清除登入驗證狀態
+    st.session_state.pop("password_correct", None)
+    st.session_state.pop("password", None)
+
+    # 重新執行 App，回到登入畫面
+    st.rerun()
+
+# ==========================================
 # 2. 步驟 1：資料獲取與「預熱」邏輯
 # ==========================================
 st.header("Step 1: 資料獲取與預熱處理")
