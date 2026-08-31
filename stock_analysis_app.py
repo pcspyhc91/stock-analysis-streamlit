@@ -17,6 +17,46 @@ st.set_page_config(
     layout="wide"
 )
 
+
+# ==========================================
+# 0-1. Password Authentication（密碼驗證）
+# ==========================================
+def check_password():
+    """使用 Streamlit Secrets 驗證網站存取密碼。"""
+
+    def password_entered():
+        if st.session_state.get("password", "") == st.secrets["APP_PASSWORD"]:
+            st.session_state["password_correct"] = True
+            st.session_state.pop("password", None)
+        else:
+            st.session_state["password_correct"] = False
+
+    if st.session_state.get("password_correct", False):
+        return True
+
+    st.title("🔐 2026 股市 AI 紅綠燈多空指標分析系統")
+    st.subheader("系統登入")
+
+    st.text_input(
+        "請輸入存取密碼",
+        type="password",
+        on_change=password_entered,
+        key="password",
+        placeholder="Password"
+    )
+
+    if "password_correct" in st.session_state:
+        st.error("❌ 密碼錯誤，請重新輸入。")
+    else:
+        st.info("本系統僅供授權使用者存取。")
+
+    return False
+
+
+if not check_password():
+    st.stop()
+
+
 # 處理中文字型 (解決雲端 Linux 亂碼問題)
 font_path = "NotoSansTC-Regular.ttf"
 if os.path.exists(font_path):
