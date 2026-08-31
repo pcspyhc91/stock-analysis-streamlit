@@ -110,6 +110,32 @@ warmup_days = st.sidebar.slider(
     help="設定技術指標的預熱資料天數。預設 60 天，用於降低 EMA、MACD 與 RSI 初始計算偏差。"
 )
 
+# X 軸日期間隔
+tick_interval = st.sidebar.slider(
+    "X 軸日期間隔",
+    min_value=5,
+    max_value=30,
+    value=15,
+    step=5,
+    help="設定技術分析圖表 X 軸日期標籤的顯示間隔。數值越大，日期標籤越疏。"
+)
+
+# 顯示技術指標資料表
+show_data = st.sidebar.checkbox(
+    "顯示技術指標資料表",
+    value=False,
+    help="勾選後顯示觀測期間內的技術指標資料表。"
+)
+
+# 重新整理資料
+if st.sidebar.button(
+    "🔄 重新整理資料",
+    use_container_width=True,
+    help="清除 Streamlit 快取並重新向 Yahoo Finance 取得股票資料。"
+):
+    st.cache_data.clear()
+    st.rerun()
+
 # ==========================================
 # 1-1. Logout（登出系統）
 # ==========================================
@@ -423,8 +449,8 @@ ax4 = fig.add_subplot(8,1,6)     # MACD (佔 1 單位)
 ax5 = fig.add_subplot(8,1,7)     # RSI (佔 1 單位)
 ax6 = fig.add_subplot(8,1,8)     # BIAS (佔 1 單位)
 
-# 定義 X 軸刻度間隔
-step = max(1, len(plot_df.index) // 10)
+# 定義 X 軸刻度間隔（由側邊欄控制）
+step = max(1, int(tick_interval))
 x_ticks_pos = range(0, len(plot_df.index), step)
 x_ticks_labels = plot_df.index[::step]
 
@@ -509,6 +535,83 @@ ax6.grid(True, linestyle='--', alpha=0.3)
 
 # 渲染主圖表到網頁
 st.pyplot(fig)
+
+# ==========================================
+# 5-1. 技術指標資料表
+# ==========================================
+if show_data:
+    st.subheader("🧾 技術指標資料表")
+
+    display_columns = [
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "SMA_5",
+        "SMA_10",
+        "SMA_20",
+        "upper_band",
+        "lower_band",
+        "OBV",
+        "K",
+        "D",
+        "J",
+        "DIF",
+        "MACD",
+        "MACD Histogram",
+        "RSI5",
+        "RSI10",
+        "BIAS10",
+        "BIAS20",
+        "B10-B20",
+        "Total_Score",
+    ]
+
+    available_columns = [
+        col for col in display_columns
+        if col in df.columns
+    ]
+
+    table_df = df[available_columns].copy()
+    table_df.index = pd.to_datetime(table_df.index).strftime("%Y-%m-%d")
+    table_df.index.name = "日期"
+
+    display_column_names = {
+        "Open": "開盤價",
+        "High": "最高價",
+        "Low": "最低價",
+        "Close": "收盤價",
+        "Volume": "成交量",
+        "SMA_5": "SMA_5",
+        "SMA_10": "SMA_10",
+        "SMA_20": "SMA_20",
+        "upper_band": "Upper Band",
+        "lower_band": "Lower Band",
+        "OBV": "OBV",
+        "K": "K值",
+        "D": "D值",
+        "J": "J值",
+        "DIF": "DIF",
+        "MACD": "MACD",
+        "MACD Histogram": "MACD柱狀圖",
+        "RSI5": "RSI5日指標",
+        "RSI10": "RSI10日指標",
+        "BIAS10": "BIAS10日乖離率",
+        "BIAS20": "BIAS20日乖離率",
+        "B10-B20": "B10-B20差值",
+        "Total_Score": "多空綜合總分",
+    }
+
+    table_df = table_df.rename(
+        columns=display_column_names
+    )
+
+    st.dataframe(
+        table_df.sort_index(ascending=False),
+        use_container_width=True,
+        height=500
+    )
 
 # ==========================================
 # 6. 步驟 5：歷史紅綠燈綜合總分走勢圖
