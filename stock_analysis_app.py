@@ -80,14 +80,35 @@ st.markdown("""
 # 1. 側邊欄與參數設定
 # ==========================================
 st.sidebar.header("⚙️ 參數設定")
-stock_id = st.sidebar.text_input("股票代號", "2330.TW")
+
+stock_id = st.sidebar.text_input(
+    "股票代號",
+    "2330.TW",
+    help="請輸入 Yahoo Finance 可辨識的股票代碼，例如台積電為 2330.TW。"
+)
 
 default_start = datetime(2025, 11, 19).date()
 default_end = datetime(2026, 5, 22).date()
 
-target_start = st.sidebar.date_input("觀測起始日", default_start)
-target_end = st.sidebar.date_input("觀測結束日", default_end)
-warmup_days = st.sidebar.slider("指標預熱天數 (用於 EMA/RSI 準確度)", 30, 100, 60)
+target_start = st.sidebar.date_input(
+    "觀測起始日",
+    default_start,
+    help="選擇技術分析圖表的開始日期。系統會依照指標預熱天數，自動向前取得歷史資料進行技術指標計算。"
+)
+
+target_end = st.sidebar.date_input(
+    "觀測結束日",
+    default_end,
+    help="選擇技術分析圖表的結束日期。請確認結束日期不早於觀測起始日。"
+)
+
+warmup_days = st.sidebar.slider(
+    "指標預熱天數 (用於 EMA/RSI 準確度)",
+    30,
+    100,
+    60,
+    help="設定技術指標的預熱資料天數。預設 60 天，用於降低 EMA、MACD 與 RSI 初始計算偏差。"
+)
 
 # ==========================================
 # 1-1. Logout（登出系統）
